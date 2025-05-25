@@ -1,0 +1,42 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 8
+    paths:
+        - app/
+        - routes/
+        - config/
+        - database/
+
+    # Strict analysis options
+    checkBenevolentUnionTypes: true
+    checkExplicitMixedMissingReturn: true
+    checkImplicitMixed: true
+    checkMissingCallableSignature: true
+    checkTooWideReturnTypesInProtectedAndPublicMethods: true
+    checkUninitializedProperties: true
+    reportMaybesInMethodSignatures: true
+    reportStaticMethodSignatures: true
+
+    # Ignore specific Laravel patterns
+    ignoreErrors:
+        # Laravel Request classes can have uninitialized properties
+        -
+            message: "#^Class .*Request has an uninitialized property .*$#"
+            identifier: property.uninitialized
+        
+        # Magic constants in controllers are acceptable
+        -
+            path: app/Http/Controllers/**/*Controller.php
+            identifier: magicConstant.outOfFunction
+
+        # Laravel Eloquent model specifics
+        -
+            message: "#^Unsafe usage of new static\\(\\)\\.$#"
+            path: app/Models/*.php
+
+        # Factory definitions don't need strict return types
+        -
+            path: database/factories/*Factory.php
+            message: "#^Method .*Factory\\:\\:definition\\(\\) return type has no value type specified in iterable type array\\.$#"

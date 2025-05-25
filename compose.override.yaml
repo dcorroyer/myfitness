@@ -1,0 +1,40 @@
+services:
+  php:
+    container_name: myfood-php
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: dev
+      args:
+        UID: ${UID-1000}
+        GID: ${GID-1000}
+    user: ${UID-1000}:${GID-1000}
+    volumes:
+      - ./.castor:/.castor
+      - ./app:/app
+      - user_data:/home/appuser
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+    tty: true
+    networks:
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      # --- Laravel Web (Port 80) ---
+      - "traefik.http.routers.php-docker-laravel.rule=Host(`myfood.web.localhost`)"
+      - "traefik.http.routers.php-docker-laravel.tls=true"
+      - "traefik.http.routers.php-docker-laravel.service=php-docker-laravel"
+      - "traefik.http.services.php-docker-laravel.loadbalancer.server.port=80"
+
+  ###> doctrine/doctrine-bundle ###
+  database:
+    container_name: myfood-database
+###< doctrine/doctrine-bundle ###
+
+volumes:
+  user_data: ~
+
+networks:
+  traefik:
+    external: true
