@@ -30,6 +30,29 @@ services:
   ###> doctrine/doctrine-bundle ###
   database:
     container_name: myfood-database
+
+  phpmyadmin:
+    container_name: myfood-phpmyadmin
+    image: phpmyadmin/phpmyadmin:latest
+    restart: unless-stopped
+    environment:
+      PMA_HOST: database
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - database
+    networks:
+      - database
+      - traefik
+    labels:
+      - "traefik.enable=true"
+      # --- phpMyAdmin (Port 80) ---
+      - "traefik.http.routers.phpmyadmin.rule=Host(`myfood.db.localhost`)"
+      - "traefik.http.routers.phpmyadmin.tls=true"
+      - "traefik.http.routers.phpmyadmin.service=phpmyadmin"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
 ###< doctrine/doctrine-bundle ###
 
 volumes:
